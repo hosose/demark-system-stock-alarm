@@ -1,0 +1,28 @@
+name: Stock Demark Check
+
+on:
+  schedule:
+    # UTC 기준 00:00은 한국 시간 오전 9:00입니다.
+    - cron: '0 0 * * *'
+  # 수동으로 버튼 눌러서 실행해보고 싶을 때를 위한 옵션
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 저장소 코드 가져오기 (Checkout)
+      uses: actions/checkout@v3
+
+    - name: 파이썬 설정하기 (Set up Python)
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: 라이브러리 설치 (Install Dependencies)
+      run: |
+        pip install -r requirements.txt
+
+    - name: 파이썬 코드 실행 (Run Script)
+      run: python main.py

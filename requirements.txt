@@ -1,0 +1,3 @@
+# 파일명: requirements.txt
+yfinance
+pandas
