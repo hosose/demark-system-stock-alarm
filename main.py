@@ -17,17 +17,27 @@ def send_telegram(msg):
     chat_id = os.environ.get('TELEGRAM_CHAT_ID')
     
     if not token or not chat_id:
-        print("텔레그램 토큰이 설정되지 않아 메시지를 보낼 수 없습니다.")
+        print("❌ 설정 오류: 텔레그램 토큰이나 채팅 ID가 없습니다.")
         return
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     data = {'chat_id': chat_id, 'text': msg}
     
     try:
-        requests.post(url, data=data)
-        print("텔레그램 전송 완료")
+        # 응답(response)을 변수에 저장
+        response = requests.post(url, data=data)
+        
+        # 응답 내용을 JSON으로 파싱해서 확인
+        res_json = response.json()
+        
+        if response.status_code == 200 and res_json.get('ok'):
+            print("✅ 텔레그램 메시지 발송 성공!")
+        else:
+            print(f"❌ 텔레그램 발송 실패! (HTTP {response.status_code})")
+            print(f"🔻 에러 이유: {res_json.get('description')}") # 여기가 핵심입니다
+            
     except Exception as e:
-        print(f"텔레그램 전송 실패: {e}")
+        print(f"❌ 연결 에러 발생: {e}")
 
 def check_demark(ticker, name):
     print(f"[{name}] 데이터 분석 중...")
