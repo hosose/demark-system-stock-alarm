@@ -9,7 +9,9 @@ tickers = {
     '^KS11': '코스피',
     '^KQ11': '코스닥',
     '005930.KS': '삼성전자',
-    'TSLA': '테슬라' # 필요하면 주석 해제
+    'TSLA': '테슬라',
+    'NVDA': '엔비디아', # 테스트용 미국 주식 추가
+    'AAPL': '애플'
 }
 
 def send_telegram(msg):
@@ -24,24 +26,25 @@ def send_telegram(msg):
     data = {'chat_id': chat_id, 'text': msg}
     
     try:
-        # 응답(response)을 변수에 저장
         response = requests.post(url, data=data)
-        
-        # 응답 내용을 JSON으로 파싱해서 확인
         res_json = response.json()
         
         if response.status_code == 200 and res_json.get('ok'):
             print("✅ 텔레그램 메시지 발송 성공!")
         else:
             print(f"❌ 텔레그램 발송 실패! (HTTP {response.status_code})")
-            print(f"🔻 에러 이유: {res_json.get('description')}") # 여기가 핵심입니다
+            print(f"🔻 에러 이유: {res_json.get('description')}")
             
     except Exception as e:
         print(f"❌ 연결 에러 발생: {e}")
 
 def check_demark(ticker, name):
     print(f"[{name}] 데이터 분석 중...")
-    df = yf.download(ticker, period='3mo', progress=False)
+    try:
+        df = yf.download(ticker, period='3mo', progress=False)
+    except Exception as e:
+        print(f"다운로드 에러: {e}")
+        return
     
     if df.empty:
         return
@@ -57,7 +60,6 @@ def check_demark(ticker, name):
     buy_setup = 0
     sell_setup = 0
     
-    # 최근 데이터 순회
     for i in range(len(df)-15, len(df)):
         if close_vals[i] > close_4_vals[i]:
             sell_setup += 1
@@ -69,31 +71,33 @@ def check_demark(ticker, name):
             buy_setup = 0
             sell_setup = 0
 
-    # 오늘의 종가
-    current_price = int(df['Close'].iloc[-1]) # 보기 좋게 정수로 변환
+    # --- [수정된 부분] 화폐 단위 구분 로직 ---
+    last_close = df['Close'].iloc[-1]
     
-    # 알림 로직 (9 카운트 이상일 때만 알림)
+    # 한국 주식 특징: .KS(코스피), .KQ(코스닥), ^K(한국지수)
+    if ticker.endswith('.KS') or ticker.endswith('.KQ') or ticker.startswith('^K'):
+        price_str = f"{int(last_close):,}원"  # 한국: 정수 + 원
+    else:
+        price_str = f"${last_close:,.2f}"    # 미국: 소수점 + $
+
+    # 알림 로직
     msg = ""
-    if buy_setup >= 3:
-        msg = f"🔥 [매수 신호] {name} ({ticker})\n- 종가: {current_price:,}원\n- 디마크: Buy Setup {buy_setup}일차\n- 반등 가능성이 높습니다!"
-    elif sell_setup >= 3:
-        msg = f"⚠️ [매도 신호] {name} ({ticker})\n- 종가: {current_price:,}원\n- 디마크: Sell Setup {sell_setup}일차\n- 조정 가능성이 높습니다!"
+    if buy_setup >= 9:
+        msg = f"🔥 [매수 신호] {name} ({ticker})\n- 종가: {price_str}\n- 디마크: Buy Setup {buy_setup}일차\n- 반등 가능성이 높습니다!"
+    elif sell_setup >= 9:
+        msg = f"⚠️ [매도 신호] {name} ({ticker})\n- 종가: {price_str}\n- 디마크: Sell Setup {sell_setup}일차\n- 조정 가능성이 높습니다!"
     
-    # 메시지가 있으면(신호가 떴으면) 텔레그램 발송
     if msg:
         print(f"알림 발송: {msg}")
         send_telegram(msg)
     else:
-        print(f"특이사항 없음 (Buy:{buy_setup}, Sell:{sell_setup})")
+        print(f"특이사항 없음 (종가: {price_str}, Buy:{buy_setup}, Sell:{sell_setup})")
 
 if __name__ == "__main__":
     print(f"--- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 분석 시작 ---")
-    
-    # 혹시 모르니 시작했다는 알림을 한번 보내고 싶으면 아래 주석 해제
-    # send_telegram("📈 주식 디마크 분석을 시작합니다.") 
     
     for t, n in tickers.items():
         try:
             check_demark(t, n)
         except Exception as e:
-            print(f"에러 발생: {e}")
+            print(f"[{n}] 처리 중 에러 발생: {e}")
