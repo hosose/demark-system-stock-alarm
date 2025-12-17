@@ -25,4 +25,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: 파이썬 코드 실행 (Run Script)
+      env:  # <--- 여기부터 추가된 부분
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: python main.py
