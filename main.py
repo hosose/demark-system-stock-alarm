@@ -129,7 +129,7 @@ def check_market(ticker, name):
         msg = f"💎 [강력 매수 기회] {name}\n- 가격: {price_str}\n- 상태: {trend_msg}\n- 이유: 상승 추세 중 단기 조정(눌림목) 발생! (Buy Setup 9)"
         
     # 2. 일반 매수/매도 신호 (기존)
-    elif buy_setup >= 9:
+    elif buy_setup >= 4:
         msg = f"🔥 [매수 신호] {name}\n- 가격: {price_str}\n- 상태: {trend_msg}\n- 디마크: Buy Setup {buy_setup}일차"
     elif sell_setup >= 9:
         msg = f"⚠️ [매도 신호] {name}\n- 가격: {price_str}\n- 상태: {trend_msg}\n- 디마크: Sell Setup {sell_setup}일차"
@@ -138,7 +138,7 @@ def check_market(ticker, name):
         print(f"알림 발송: {msg}")
         send_telegram(msg)
     else:
-        print(f"특이사항 없음 ({name}: {trend_msg}, Buy:{buy_setup})")
+        print(f"특이사항 없음 ({name}: {trend_msg}, Buy:{buy_setup}, Sell:{sell_setup})")
 
 if __name__ == "__main__":
     print(f"--- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 분석 시작 ---")
