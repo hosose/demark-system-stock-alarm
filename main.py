@@ -124,14 +124,33 @@ def check_market(ticker, name):
     # --- 알림 로직 (조건부 알림) ---
     msg = ""
     
+# --- [수정] 자산별 맞춤형 기준 설정 ---
+    # 기본값은 9 (엄격함)
+    buy_threshold = 9 
+    sell_threshold = 9
+
+    # 1. 암호화폐 (변동성 큼 -> 매우 엄격하게 9 유지)
+    if ticker in ['BTC-USD', 'ETH-USD']:
+        buy_threshold = 9
+    
+    # 2. 개별 주식 (변동성 중간 -> 조금 공격적으로 6~7 정도도 허용)
+    # 삼성전자나 테슬라 같은 경우 6~7일 연속 하락하면 기술적 반등이 꽤 잘 나옵니다.
+    elif ticker in ['005930.KS', 'TSLA', 'AAPL', 'NVDA']:
+        buy_threshold = 4  # 6일 연속 하락하면 알림
+        
+    # 3. 지수/ETF (변동성 작음 -> 9 유지 권장)
+    # 지수가 9일 연속 하락하는 건 정말 드물어서 신뢰도가 높음
+    else:
+        buy_threshold = 4
+
     # 1. 최고의 매수 기회: 상승 추세인데 + 디마크로 과하게 떨어졌을 때 (눌림목)
-    if buy_setup >= 9 and is_uptrend:
+    if buy_setup >= buy_threshold and is_uptrend:
         msg = f"💎 [강력 매수 기회] {name}\n- 가격: {price_str}\n- 상태: {trend_msg}\n- 이유: 상승 추세 중 단기 조정(눌림목) 발생! (Buy Setup 9)"
         
     # 2. 일반 매수/매도 신호 (기존)
-    elif buy_setup >= 4:
+    elif buy_setup >= buy_threshold:
         msg = f"🔥 [매수 신호] {name}\n- 가격: {price_str}\n- 상태: {trend_msg}\n- 디마크: Buy Setup {buy_setup}일차"
-    elif sell_setup >= 9:
+    elif sell_setup >= sell_threshold:
         msg = f"⚠️ [매도 신호] {name}\n- 가격: {price_str}\n- 상태: {trend_msg}\n- 디마크: Sell Setup {sell_setup}일차"
 
     if msg:
