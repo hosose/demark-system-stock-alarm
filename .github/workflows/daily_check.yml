@@ -18,7 +18,7 @@ jobs:
     - name: 파이썬 설정하기 (Set up Python)
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.10'
 
     - name: 라이브러리 설치 (Install Dependencies)
       run: |
