@@ -6,6 +6,10 @@ from datetime import datetime
 
 # 종목 리스트
 tickers = {
+    # --- 암호화폐  ---
+    'BTC-USD': '비트코인',
+    'ETH-USD': '이더리움',
+    
     # --- 한국 지수 ---
     '^KS11': '코스피',
     '^KQ11': '코스닥',
