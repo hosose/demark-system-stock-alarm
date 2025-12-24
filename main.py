@@ -182,16 +182,10 @@ def check_market(ticker, name):
     if ticker in ['BTC-USD', 'ETH-USD']:
         base_threshold = 9
     elif ticker in ['005930.KS', 'TSLA', 'AAPL', 'NVDA']:
-        base_threshold = 3
+        base_threshold = 4
     else:
-        base_threshold = 3
+        base_threshold = 4
         
-    if is_downtrend:
-        buy_threshold = base_threshold + 3
-        trend_msg += "(기준↑)"
-    else:
-        buy_threshold = base_threshold
-
     # --- 알림 로직 ---
     msg = ""
     should_send_chart = False # 차트를 보낼지 여부
