@@ -186,6 +186,8 @@ def check_market(ticker, name):
     else:
         base_threshold = 4
         
+    buy_threshold = base_threshold
+
     # --- 알림 로직 ---
     msg = ""
     should_send_chart = False # 차트를 보낼지 여부
@@ -216,7 +218,7 @@ def check_market(ticker, name):
         else:
             send_telegram(msg)
     else:
-        print(f"특이사항 없음 ({name}: {trend_msg}, Buy:{buy_setup}/{buy_threshold})")
+        print(f"특이사항 없음 ({name}: {trend_msg}, Buy:{buy_setup}/{buy_threshold}), Sell:{sell_setup}/{sell_threshold}")
 
 if __name__ == "__main__":
     from datetime import timedelta
